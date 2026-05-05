@@ -3,7 +3,7 @@ module github.com/go-oidfed/resolve-browser
 go 1.25.1
 
 require (
-	github.com/go-oidfed/lib v0.0.0
+	github.com/go-oidfed/lib v0.10.5
 	github.com/gofiber/fiber/v2 v2.52.13
 )
 
@@ -55,5 +55,3 @@ require (
 	golang.org/x/text v0.36.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/go-oidfed/lib => ../lib
