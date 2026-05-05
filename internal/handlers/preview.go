@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"time"
 
@@ -48,7 +49,7 @@ func ResolvePreviewHandler(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusBadRequest).JSON(
 				api.ErrorResponse{
 					Error:            "invalid_statement",
-					ErrorDescription: "failed to convert statement at index " + string(rune(i+1)) + ": " + err.Error(),
+					ErrorDescription: fmt.Sprintf("failed to convert statement at index %d: %s", i+1, err.Error()),
 				},
 			)
 		}
@@ -64,7 +65,7 @@ func ResolvePreviewHandler(c *fiber.Ctx) error {
 				return c.Status(fiber.StatusBadRequest).JSON(
 					api.ErrorResponse{
 						Error:            "constraint_violation",
-						ErrorDescription: "constraint violation at position " + string(rune(i+1)),
+						ErrorDescription: fmt.Sprintf("constraint violation at position %d", i+1),
 					},
 				)
 			}
