@@ -88,13 +88,13 @@
   }
 </script>
 
-<div class="bg-white rounded-lg shadow-md p-6">
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
   <div class="flex items-center justify-between mb-4">
-    <h2 class="text-xl font-semibold text-gray-900">Metadata Diff</h2>
+    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Metadata Diff</h2>
     <div class="flex items-center gap-2">
       <button
         on:click={toggleViewMode}
-        class="px-3 py-1 text-sm border rounded-md hover:bg-gray-50 transition-colors"
+        class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
       >
         {viewMode === 'split' ? 'Switch to Combined View' : 'Switch to Split View'}
       </button>
@@ -102,15 +102,15 @@
   </div>
   
   {#if !hasChanges}
-    <p class="text-gray-500 text-sm">No changes detected between original and modified metadata.</p>
+    <p class="text-gray-500 dark:text-gray-400 text-sm">No changes detected between original and modified metadata.</p>
   {:else}
-    <div class="border rounded-lg overflow-hidden">
+    <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
       <!-- Header -->
-      <div class="grid grid-cols-2 border-b bg-gray-50">
-        <div class="px-4 py-2 text-xs font-medium text-gray-600 border-r">
+      <div class="grid grid-cols-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+        <div class="px-4 py-2 text-xs font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">
           Original
         </div>
-        <div class="px-4 py-2 text-xs font-medium text-gray-600">
+        <div class="px-4 py-2 text-xs font-medium text-gray-600 dark:text-gray-300">
           Modified
         </div>
       </div>
@@ -119,35 +119,35 @@
       <div class="font-mono text-sm">
         {#each diffLines as block}
           <!-- Path Header -->
-          <div class="bg-gray-100 px-4 py-1 text-xs text-gray-600 border-t border-b">
+          <div class="bg-gray-100 dark:bg-gray-700 px-4 py-1 text-xs text-gray-600 dark:text-gray-300 border-t border-b border-gray-200 dark:border-gray-600">
             @@ {block.path} @@
           </div>
           
           {#if viewMode === 'split'}
             <!-- Split View -->
             <div class="grid grid-cols-2">
-              <div class="border-r">
+              <div class="border-r border-gray-200 dark:border-gray-700">
                 {#if block.oldLines && block.oldLines.length > 0}
                   {#each block.oldLines as line}
-                    <div class="px-4 py-0.5 bg-red-50 text-red-800 flex">
+                    <div class="px-4 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 flex">
                       <span class="w-6 flex-shrink-0 select-none">-</span>
                       <span class="whitespace-pre-wrap break-all">{line.content}</span>
                     </div>
                   {/each}
                 {:else}
-                  <div class="px-4 py-2 text-gray-400 italic">no change</div>
+                  <div class="px-4 py-2 text-gray-400 dark:text-gray-500 italic">no change</div>
                 {/if}
               </div>
               <div>
                 {#if block.newLines && block.newLines.length > 0}
                   {#each block.newLines as line}
-                    <div class="px-4 py-0.5 bg-green-50 text-green-800 flex">
+                    <div class="px-4 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 flex">
                       <span class="w-6 flex-shrink-0 select-none">+</span>
                       <span class="whitespace-pre-wrap break-all">{line.content}</span>
                     </div>
                   {/each}
                 {:else}
-                  <div class="px-4 py-2 text-gray-400 italic">no change</div>
+                  <div class="px-4 py-2 text-gray-400 dark:text-gray-500 italic">no change</div>
                 {/if}
               </div>
             </div>
@@ -156,7 +156,7 @@
             <div>
               {#if block.oldLines && block.oldLines.length > 0}
                 {#each block.oldLines as line}
-                  <div class="px-4 py-0.5 bg-red-50 text-red-800 flex">
+                  <div class="px-4 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 flex">
                     <span class="w-6 flex-shrink-0 select-none">-</span>
                     <span class="whitespace-pre-wrap break-all">{line.content}</span>
                   </div>
@@ -164,7 +164,7 @@
               {/if}
               {#if block.newLines && block.newLines.length > 0}
                 {#each block.newLines as line}
-                  <div class="px-4 py-0.5 bg-green-50 text-green-800 flex">
+                  <div class="px-4 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 flex">
                     <span class="w-6 flex-shrink-0 select-none">+</span>
                     <span class="whitespace-pre-wrap break-all">{line.content}</span>
                   </div>
@@ -177,13 +177,13 @@
     </div>
     
     <!-- Legend -->
-    <div class="mt-4 flex items-center gap-4 text-xs text-gray-600">
+    <div class="mt-4 flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
       <div class="flex items-center gap-2">
-        <span class="w-4 h-4 bg-red-50 border border-red-200 inline-block"></span>
+        <span class="w-4 h-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 inline-block"></span>
         <span>Removed</span>
       </div>
       <div class="flex items-center gap-2">
-        <span class="w-4 h-4 bg-green-50 border border-green-200 inline-block"></span>
+        <span class="w-4 h-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 inline-block"></span>
         <span>Added</span>
       </div>
     </div>

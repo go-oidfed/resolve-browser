@@ -20,11 +20,11 @@
   
   function getTypeColor(type) {
     const colors = {
-      'trust_anchor_entity_configuration': 'bg-green-100 border-green-300 text-green-800',
-      'subordinate_statement': 'bg-blue-100 border-blue-300 text-blue-800',
-      'entity_configuration': 'bg-purple-100 border-purple-300 text-purple-800'
+      'trust_anchor_entity_configuration': 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-300',
+      'subordinate_statement': 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300',
+      'entity_configuration': 'bg-purple-100 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700 text-purple-800 dark:text-purple-300'
     }
-    return colors[type] || 'bg-gray-100 border-gray-300 text-gray-800'
+    return colors[type] || 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-300'
   }
   
   function isTrustAnchor() {
@@ -69,21 +69,21 @@
   }
 </script>
 
-<div class="border rounded-lg mb-0">
+<div class="border border-gray-200 dark:border-gray-700 rounded-lg mb-0">
   <button
     on:click={onToggle}
-    class="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors rounded-t-lg"
+    class="w-full flex items-center justify-between p-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-t-lg"
   >
     <div class="flex items-center gap-3">
-      <span class="text-sm font-medium text-gray-500">#{index + 1}</span>
+      <span class="text-sm font-medium text-gray-500 dark:text-gray-400">#{index + 1}</span>
       <span class="px-3 py-1 text-xs font-medium rounded-full border {getTypeColor(statement.type)}">
         {getTypeLabel(statement.type)}
       </span>
-      <span class="text-sm text-gray-900 font-medium">{formatEntityId(statement.subject)}</span>
+      <span class="text-sm text-gray-900 dark:text-white font-medium">{formatEntityId(statement.subject)}</span>
     </div>
     
     <svg
-      class="w-5 h-5 text-gray-500 transform transition-transform {isExpanded ? 'rotate-180' : ''}"
+      class="w-5 h-5 text-gray-500 dark:text-gray-400 transform transition-transform {isExpanded ? 'rotate-180' : ''}"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -93,23 +93,23 @@
   </button>
   
   {#if isExpanded}
-    <div class="border-t p-4 bg-gray-50 space-y-4">
+    <div class="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/50 space-y-4">
       <div class="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <span class="text-gray-500">Issuer:</span>
-          <p class="text-gray-900 font-mono text-xs mt-1 break-all">{statement.issuer}</p>
+          <span class="text-gray-500 dark:text-gray-400">Issuer:</span>
+          <p class="text-gray-900 dark:text-white font-mono text-xs mt-1 break-all">{statement.issuer}</p>
         </div>
         <div>
-          <span class="text-gray-500">Subject:</span>
-          <p class="text-gray-900 font-mono text-xs mt-1 break-all">{statement.subject}</p>
+          <span class="text-gray-500 dark:text-gray-400">Subject:</span>
+          <p class="text-gray-900 dark:text-white font-mono text-xs mt-1 break-all">{statement.subject}</p>
         </div>
         <div>
-          <span class="text-gray-500">Issued At:</span>
-          <p class="text-gray-900">{formatTime(statement.iat)}</p>
+          <span class="text-gray-500 dark:text-gray-400">Issued At:</span>
+          <p class="text-gray-900 dark:text-white">{formatTime(statement.iat)}</p>
         </div>
         <div>
-          <span class="text-gray-500">Expires At:</span>
-          <p class="text-gray-900">{formatTime(statement.exp)}</p>
+          <span class="text-gray-500 dark:text-gray-400">Expires At:</span>
+          <p class="text-gray-900 dark:text-white">{formatTime(statement.exp)}</p>
         </div>
       </div>
       
@@ -120,12 +120,12 @@
       />
       
       <!-- Inline Editing Section -->
-      <div class="border-t pt-4 mt-4">
-        <h4 class="text-sm font-semibold text-gray-700 mb-3">Edit Payload Fields</h4>
+      <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Edit Payload Fields</h4>
         
         {#if canEditMetadata()}
           <div class="mb-4">
-            <label class="block text-xs font-medium text-gray-500 mb-1">
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
               Metadata (JSON) {isLeafStatement() ? '(Leaf)' : '(Direct Subordinate)'}
             </label>
             <textarea
@@ -133,14 +133,14 @@
               on:change={(e) => handleJsonChange('metadata', e.target.value)}
               on:input={(e) => handleJsonChange('metadata', e.target.value)}
               rows="6"
-              class="w-full px-2 py-1 text-sm border border-gray-300 rounded font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+              class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
             ></textarea>
           </div>
         {/if}
         
         {#if canEditMetadataPolicy()}
           <div class="mb-4">
-            <label class="block text-xs font-medium text-gray-500 mb-1">
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
               Metadata Policy (JSON)
             </label>
             <textarea
@@ -148,14 +148,14 @@
               on:change={(e) => handleJsonChange('metadata_policy', e.target.value)}
               on:input={(e) => handleJsonChange('metadata_policy', e.target.value)}
               rows="4"
-              class="w-full px-2 py-1 text-sm border border-gray-300 rounded font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+              class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
             ></textarea>
           </div>
         {/if}
         
         {#if canEditConstraints()}
           <div class="mb-4">
-            <label class="block text-xs font-medium text-gray-500 mb-1">
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
               Constraints (JSON)
             </label>
             <textarea
@@ -163,18 +163,18 @@
               on:change={(e) => handleJsonChange('constraints', e.target.value)}
               on:input={(e) => handleJsonChange('constraints', e.target.value)}
               rows="4"
-              class="w-full px-2 py-1 text-sm border border-gray-300 rounded font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+              class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
             ></textarea>
           </div>
         {/if}
         
         {#if isTrustAnchor()}
-          <div class="bg-yellow-50 border border-yellow-200 rounded p-3">
-            <p class="text-xs text-yellow-800 font-medium">Trust Anchor Entity Configuration</p>
-            <p class="text-xs text-yellow-700 mt-1">Trust Anchor statements cannot be edited. Only subordinate statements and the leaf entity configuration can be modified.</p>
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded p-3">
+            <p class="text-xs text-yellow-800 dark:text-yellow-300 font-medium">Trust Anchor Entity Configuration</p>
+            <p class="text-xs text-yellow-700 dark:text-yellow-400 mt-1">Trust Anchor statements cannot be edited. Only subordinate statements and the leaf entity configuration can be modified.</p>
           </div>
         {:else if !canEditMetadata() && !canEditMetadataPolicy() && !canEditConstraints()}
-          <p class="text-xs text-gray-500 italic">No editable fields for this statement type</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 italic">No editable fields for this statement type</p>
         {/if}
       </div>
     </div>
