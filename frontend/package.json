@@ -1,0 +1,22 @@
+{
+  "name": "resolve-browser-frontend",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "svelte": "^5.19.7",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.1.0"
+  },
+  "dependencies": {
+    "jsondiffpatch": "^0.6.0"
+  }
+}
