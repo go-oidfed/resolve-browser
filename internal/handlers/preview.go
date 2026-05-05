@@ -2,45 +2,55 @@ package handlers
 
 import (
 	"encoding/json"
+	"reflect"
 	"time"
 
 	"github.com/go-oidfed/lib"
 	"github.com/go-oidfed/lib/unixtime"
-	"github.com/go-oidfed/resolve-browser/internal/api"
 	"github.com/gofiber/fiber/v2"
+
+	"github.com/go-oidfed/resolve-browser/internal/api"
 )
 
 func ResolvePreviewHandler(c *fiber.Ctx) error {
 	var req api.PreviewRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(api.ErrorResponse{
-			Error:            "invalid_request",
-			ErrorDescription: "failed to parse request body: " + err.Error(),
-		})
+		return c.Status(fiber.StatusBadRequest).JSON(
+			api.ErrorResponse{
+				Error:            "invalid_request",
+				ErrorDescription: "failed to parse request body: " + err.Error(),
+			},
+		)
 	}
 
 	if len(req.TrustChain) == 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(api.ErrorResponse{
-			Error:            "invalid_request",
-			ErrorDescription: "trust_chain cannot be empty",
-		})
+		return c.Status(fiber.StatusBadRequest).JSON(
+			api.ErrorResponse{
+				Error:            "invalid_request",
+				ErrorDescription: "trust_chain cannot be empty",
+			},
+		)
 	}
 
 	if req.TrustAnchor == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(api.ErrorResponse{
-			Error:            "invalid_request",
-			ErrorDescription: "trust_anchor is required",
-		})
+		return c.Status(fiber.StatusBadRequest).JSON(
+			api.ErrorResponse{
+				Error:            "invalid_request",
+				ErrorDescription: "trust_anchor is required",
+			},
+		)
 	}
 
 	statements := make([]*oidfed.EntityStatement, len(req.TrustChain))
 	for i, editable := range req.TrustChain {
 		stmt, err := editableStatementToEntityStatement(editable)
 		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(api.ErrorResponse{
-				Error:            "invalid_statement",
-				ErrorDescription: "failed to convert statement at index " + string(rune(i+1)) + ": " + err.Error(),
-			})
+			return c.Status(fiber.StatusBadRequest).JSON(
+				api.ErrorResponse{
+					Error:            "invalid_statement",
+					ErrorDescription: "failed to convert statement at index " + string(rune(i+1)) + ": " + err.Error(),
+				},
+			)
 		}
 		statements[i] = stmt
 	}
@@ -51,19 +61,18 @@ func ResolvePreviewHandler(c *fiber.Ctx) error {
 
 		if parent.Constraints != nil {
 			if !checkConstraints(parent.Constraints, child, i+1) {
-				return c.Status(fiber.StatusBadRequest).JSON(api.ErrorResponse{
-					Error:            "constraint_violation",
-					ErrorDescription: "constraint violation at position " + string(rune(i+1)),
-				})
+				return c.Status(fiber.StatusBadRequest).JSON(
+					api.ErrorResponse{
+						Error:            "constraint_violation",
+						ErrorDescription: "constraint violation at position " + string(rune(i+1)),
+					},
+				)
 			}
 		}
 	}
 
 	leafIndex := len(statements) - 1
 	leafMetadata := statements[leafIndex].Metadata
-	if leafMetadata == nil {
-		leafMetadata = &oidfed.Metadata{}
-	}
 
 	metadataPolicies := make([]*oidfed.MetadataPolicies, len(statements))
 	for i, stmt := range statements {
@@ -72,18 +81,37 @@ func ResolvePreviewHandler(c *fiber.Ctx) error {
 
 	combinedPolicy, err := oidfed.MergeMetadataPolicies(metadataPolicies...)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(api.ErrorResponse{
-			Error:            "invalid_metadata_policy",
-			ErrorDescription: "failed to merge metadata policies: " + err.Error(),
-		})
+		return c.Status(fiber.StatusBadRequest).JSON(
+			api.ErrorResponse{
+				Error:            "invalid_metadata_policy",
+				ErrorDescription: "failed to merge metadata policies: " + err.Error(),
+			},
+		)
 	}
 
-	finalMetadata, err := leafMetadata.ApplyPolicy(combinedPolicy)
+	var baseMetadata *oidfed.Metadata
+	if len(statements) > 1 && statements[leafIndex-1].Metadata != nil {
+		superiorMetadata := statements[leafIndex-1].Metadata
+		if leafMetadata == nil {
+			baseMetadata = superiorMetadata
+		} else {
+			baseMetadata = leafMetadata
+			mergeMetadata(baseMetadata, superiorMetadata)
+		}
+	} else if leafMetadata != nil {
+		baseMetadata = leafMetadata
+	} else {
+		baseMetadata = &oidfed.Metadata{}
+	}
+
+	finalMetadata, err := baseMetadata.ApplyPolicy(combinedPolicy)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(api.ErrorResponse{
-			Error:            "invalid_metadata_policy",
-			ErrorDescription: "failed to apply metadata policy: " + err.Error(),
-		})
+		return c.Status(fiber.StatusBadRequest).JSON(
+			api.ErrorResponse{
+				Error:            "invalid_metadata_policy",
+				ErrorDescription: "failed to apply metadata policy: " + err.Error(),
+			},
+		)
 	}
 
 	metadataMap := make(map[string]any)
@@ -91,10 +119,12 @@ func ResolvePreviewHandler(c *fiber.Ctx) error {
 		json.Unmarshal(metadataBytes, &metadataMap)
 	}
 
-	return c.JSON(api.PreviewResponse{
-		Metadata: metadataMap,
-		Valid:    true,
-	})
+	return c.JSON(
+		api.PreviewResponse{
+			Metadata: metadataMap,
+			Valid:    true,
+		},
+	)
 }
 
 func editableStatementToEntityStatement(editable api.EditableStatement) (*oidfed.EntityStatement, error) {
@@ -135,7 +165,7 @@ func editableStatementToEntityStatement(editable api.EditableStatement) (*oidfed
 		if err != nil {
 			return nil, err
 		}
-		
+
 		var metadataPolicy oidfed.MetadataPolicies
 		if err := json.Unmarshal(policyBytes, &metadataPolicy); err != nil {
 			return nil, err
@@ -219,4 +249,68 @@ func matchesNamingConstraint(constraint, entityID string) bool {
 		return len(entityID) >= len(constraint) && entityID[len(entityID)-len(constraint):] == constraint
 	}
 	return constraint == entityID
+}
+
+func mergeMetadata(target, source *oidfed.Metadata) {
+	if source == nil {
+		return
+	}
+
+	targetVal := reflect.ValueOf(target).Elem()
+	sourceVal := reflect.ValueOf(source).Elem()
+	typ := targetVal.Type()
+
+	for i := 0; i < targetVal.NumField(); i++ {
+		fieldName := typ.Field(i).Name
+
+		if fieldName == "Extra" {
+			continue
+		}
+
+		targetField := targetVal.Field(i)
+		sourceField := sourceVal.Field(i)
+
+		if sourceField.Kind() == reflect.Ptr && !sourceField.IsNil() {
+			if targetField.IsNil() {
+				targetField.Set(sourceField)
+			} else {
+				mergeStructFields(targetField.Elem(), sourceField.Elem())
+			}
+		}
+	}
+
+	if source.Extra != nil {
+		if target.Extra == nil {
+			target.Extra = make(map[string]any)
+		}
+		for k, v := range source.Extra {
+			target.Extra[k] = v
+		}
+	}
+}
+
+func mergeStructFields(target, source reflect.Value) {
+	st := source.Type()
+	for i := 0; i < source.NumField(); i++ {
+		f := st.Field(i)
+		name := f.Name
+		sf := source.Field(i)
+		tf := target.FieldByName(name)
+		if !tf.IsValid() || !tf.CanSet() {
+			continue
+		}
+		if sf.IsZero() {
+			continue
+		}
+		if sf.Kind() == reflect.Map && tf.Kind() == reflect.Map {
+			if tf.IsNil() {
+				tf.Set(reflect.MakeMap(tf.Type()))
+			}
+			for _, k := range sf.MapKeys() {
+				tf.SetMapIndex(k, sf.MapIndex(k))
+			}
+		} else {
+			tf.Set(sf)
+		}
+	}
 }
