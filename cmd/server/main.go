@@ -15,6 +15,7 @@ import (
 
 func main() {
 	app := fiber.New(fiber.Config{
+		ProxyHeader: os.Getenv("PROXY_HEADER"),
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			code := fiber.StatusInternalServerError
 			if e, ok := err.(*fiber.Error); ok {
@@ -32,7 +33,7 @@ func main() {
 	execPath, _ := os.Executable()
 	execDir := filepath.Dir(execPath)
 	staticPath := filepath.Join(execDir, "frontend", "static")
-	
+
 	if _, err := os.Stat(staticPath); os.IsNotExist(err) {
 		cwd, _ := os.Getwd()
 		staticPath = filepath.Join(cwd, "frontend", "static")
