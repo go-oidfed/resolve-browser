@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/go-oidfed/lib"
@@ -24,7 +26,7 @@ func ResolvePreviewHandler(c *fiber.Ctx) error {
 		)
 	}
 
-	if len(req.TrustChain) == 0 {
+	if len(req) == 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(
 			api.ErrorResponse{
 				Error:            "invalid_request",
@@ -33,27 +35,20 @@ func ResolvePreviewHandler(c *fiber.Ctx) error {
 		)
 	}
 
-	if req.TrustAnchor == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(
-			api.ErrorResponse{
-				Error:            "invalid_request",
-				ErrorDescription: "trust_anchor is required",
-			},
-		)
-	}
-
-	statements := make([]*oidfed.EntityStatement, len(req.TrustChain))
-	for i, editable := range req.TrustChain {
-		stmt, err := editableStatementToEntityStatement(editable)
+	statements := make([]*oidfed.EntityStatement, len(req))
+	for i, ch := range req {
+		stmt, err := parseEntityStatementInput(ch)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(
 				api.ErrorResponse{
 					Error:            "invalid_statement",
-					ErrorDescription: fmt.Sprintf("failed to convert statement at index %d: %s", i+1, err.Error()),
+					ErrorDescription: fmt.Sprintf("failed to parse statement at index %d: %s", len(req)-i, err.Error()),
 				},
 			)
 		}
-		statements[i] = stmt
+		statements[i] = &oidfed.EntityStatement{
+			EntityStatementPayload: *stmt,
+		}
 	}
 
 	for i := len(statements) - 1; i > 0; i-- {
@@ -127,68 +122,103 @@ func ResolvePreviewHandler(c *fiber.Ctx) error {
 	)
 }
 
-func editableStatementToEntityStatement(editable api.EditableStatement) (*oidfed.EntityStatement, error) {
-	payload := oidfed.EntityStatementPayload{
-		Issuer:           editable.Issuer,
-		Subject:          editable.Subject,
-		JWKS:             editable.JWKS,
-		AuthorityHints:   editable.AuthorityHints,
-		TrustAnchorHints: editable.TrustAnchorHints,
+func parseEntityStatementInput(data json.RawMessage) (*oidfed.EntityStatementPayload, error) {
+	if isJWT(data) {
+		return parseJWT(data)
 	}
 
-	if editable.IssuedAt != 0 {
-		payload.IssuedAt = unixtime.Unixtime{Time: time.Unix(editable.IssuedAt, 0)}
-	} else {
+	if isBase64Encoded(data) {
+		return parseBase64JSON(data)
+	}
+
+	return parseJSON(data)
+}
+
+func isJWT(data json.RawMessage) bool {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return false
+	}
+	parts := strings.Split(s, ".")
+	return len(parts) == 3
+}
+
+func parseJWT(data json.RawMessage) (*oidfed.EntityStatementPayload, error) {
+	var jwtStr string
+	if err := json.Unmarshal(data, &jwtStr); err != nil {
+		return nil, err
+	}
+
+	parts := strings.Split(jwtStr, ".")
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("invalid JWT format")
+	}
+
+	payloadBytes, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode JWT payload: %w", err)
+	}
+
+	var payload oidfed.EntityStatementPayload
+	if err := json.Unmarshal(payloadBytes, &payload); err != nil {
+		return nil, fmt.Errorf("failed to parse JWT payload: %w", err)
+	}
+
+	normalizeTimestamps(&payload)
+	return &payload, nil
+}
+
+func isBase64Encoded(data json.RawMessage) bool {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return false
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return false
+	}
+
+	return len(decoded) > 0 && decoded[0] == '{'
+}
+
+func parseBase64JSON(data json.RawMessage) (*oidfed.EntityStatementPayload, error) {
+	var encoded string
+	if err := json.Unmarshal(data, &encoded); err != nil {
+		return nil, err
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode base64: %w", err)
+	}
+
+	var payload oidfed.EntityStatementPayload
+	if err := json.Unmarshal(decoded, &payload); err != nil {
+		return nil, fmt.Errorf("failed to parse decoded JSON: %w", err)
+	}
+
+	normalizeTimestamps(&payload)
+	return &payload, nil
+}
+
+func parseJSON(data json.RawMessage) (*oidfed.EntityStatementPayload, error) {
+	var payload oidfed.EntityStatementPayload
+	if err := json.Unmarshal(data, &payload); err != nil {
+		return nil, fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	normalizeTimestamps(&payload)
+	return &payload, nil
+}
+
+func normalizeTimestamps(payload *oidfed.EntityStatementPayload) {
+	if payload.IssuedAt.IsZero() {
 		payload.IssuedAt = unixtime.Unixtime{Time: time.Now()}
 	}
-
-	if editable.ExpiresAt != 0 {
-		payload.ExpiresAt = unixtime.Unixtime{Time: time.Unix(editable.ExpiresAt, 0)}
-	} else {
+	if payload.ExpiresAt.IsZero() {
 		payload.ExpiresAt = unixtime.Unixtime{Time: time.Now().Add(24 * time.Hour)}
 	}
-
-	if editable.Metadata != nil {
-		metadataBytes, err := json.Marshal(editable.Metadata)
-		if err != nil {
-			return nil, err
-		}
-		var metadata oidfed.Metadata
-		if err := json.Unmarshal(metadataBytes, &metadata); err != nil {
-			return nil, err
-		}
-		payload.Metadata = &metadata
-	}
-
-	if editable.MetadataPolicy != nil {
-		policyBytes, err := json.Marshal(editable.MetadataPolicy)
-		if err != nil {
-			return nil, err
-		}
-
-		var metadataPolicy oidfed.MetadataPolicies
-		if err := json.Unmarshal(policyBytes, &metadataPolicy); err != nil {
-			return nil, err
-		}
-		payload.MetadataPolicy = &metadataPolicy
-	}
-
-	if editable.Constraints != nil {
-		payload.Constraints = &oidfed.ConstraintSpecification{
-			MaxPathLength:      editable.Constraints.MaxPathLength,
-			AllowedEntityTypes: editable.Constraints.AllowedEntityTypes,
-		}
-		if editable.Constraints.NamingConstraints != nil {
-			payload.Constraints.NamingConstraints = &oidfed.NamingConstraints{
-				Permitted: editable.Constraints.NamingConstraints.Permitted,
-				Excluded:  editable.Constraints.NamingConstraints.Excluded,
-			}
-		}
-	}
-
-	return &oidfed.EntityStatement{
-		EntityStatementPayload: payload,
-	}, nil
 }
 
 func checkConstraints(constraints *oidfed.ConstraintSpecification, stmt *oidfed.EntityStatement, depth int) bool {

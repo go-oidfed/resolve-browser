@@ -1,6 +1,6 @@
 package api
 
-import "github.com/go-oidfed/lib/jwx"
+import "encoding/json"
 
 type ResolveRequest struct {
 	Subject     string   `json:"sub"`
@@ -32,28 +32,12 @@ type TrustMarkInfo struct {
 	TrustMark     string `json:"trust_mark"`
 }
 
-type PreviewRequest struct {
-	TrustChain  []EditableStatement `json:"trust_chain"`
-	TrustAnchor string              `json:"trust_anchor"`
-}
-
-type EditableStatement struct {
-	Issuer           string                 `json:"issuer"`
-	Subject          string                 `json:"subject"`
-	JWKS             jwx.JWKS               `json:"jwks"`
-	Metadata         map[string]any         `json:"metadata,omitempty"`
-	MetadataPolicy   map[string]any         `json:"metadata_policy,omitempty"`
-	Constraints      *ConstraintSpec        `json:"constraints,omitempty"`
-	AuthorityHints   []string               `json:"authority_hints,omitempty"`
-	TrustAnchorHints []string               `json:"trust_anchor_hints,omitempty"`
-	IssuedAt         int64                  `json:"iat,omitempty"`
-	ExpiresAt        int64                  `json:"exp,omitempty"`
-}
+type PreviewRequest []json.RawMessage
 
 type ConstraintSpec struct {
-	MaxPathLength      *int                `json:"max_path_length,omitempty"`
-	NamingConstraints  *NamingConstraints  `json:"naming_constraints,omitempty"`
-	AllowedEntityTypes []string            `json:"allowed_entity_types,omitempty"`
+	MaxPathLength      *int               `json:"max_path_length,omitempty"`
+	NamingConstraints  *NamingConstraints `json:"naming_constraints,omitempty"`
+	AllowedEntityTypes []string           `json:"allowed_entity_types,omitempty"`
 }
 
 type NamingConstraints struct {

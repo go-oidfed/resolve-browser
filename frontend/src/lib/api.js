@@ -15,19 +15,17 @@ export async function resolveTrustChain(data) {
   return await response.json()
 }
 
-export async function previewEditedChain(data) {
+export async function previewEditedChain(trustChain) {
   const response = await fetch('/api/resolve/preview', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(trustChain),
   })
   
   const responseData = await response.json()
   
-  // Return error data in the response instead of throwing
-  // This allows the UI to display the error nicely
   if (!response.ok) {
     return {
       error: responseData.error || 'preview_failed',

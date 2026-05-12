@@ -1,6 +1,6 @@
-# OIDC Federation Trust Chain Resolver Browser
+# OpenID Federation Trust Chain Resolver Browser
 
-A web application for resolving and inspecting OIDC federation trust chains.
+A web application for resolving and inspecting OpenID Federation trust chains.
 
 ## Features
 
@@ -15,7 +15,7 @@ A web application for resolving and inspecting OIDC federation trust chains.
 
 ### Prerequisites
 
-- Go 1.22+
+- Go 1.25+
 - Node.js 18+
 - npm
 
@@ -99,22 +99,33 @@ Resolve a trust chain from a subject to a trust anchor.
 
 ### POST /api/resolve/preview
 
-Preview metadata resolution with edited trust chain (no signature verification).
+Preview metadata resolution with edited trust chain (no signature verification). The trust chain should be provided as a JSON array in order from leaf entity to trust anchor.
+
+Trust chain elements can be provided in three formats:
+1. **JSON object**: Plain JSON with standard OIDC Federation fields
+2. **Base64-encoded JSON**: Base64-encoded string of a JSON object
+3. **JWT**: Raw JWT string (signature is not verified, only payload is used)
 
 **Request:**
 ```json
-{
-  "trust_anchor": "https://ta.example.com",
-  "trust_chain": [
-    {
-      "issuer": "https://ta.example.com",
-      "subject": "https://ta.example.com",
-      "jwks": { "keys": [...] },
-      "metadata": { ... },
-      "constraints": { ... }
-    }
-  ]
-}
+[
+  {
+    "iss": "https://rp.example.com",
+    "sub": "https://rp.example.com",
+    "iat": 1234567890,
+    "exp": 1234567890,
+    "jwks": { "keys": [...] },
+    "metadata": { ... },
+    "authority_hints": ["https://intermediate.example.com"]
+  },
+  {
+    "iss": "https://intermediate.example.com",
+    "sub": "https://rp.example.com",
+    "jwks": { "keys": [...] },
+    "metadata_policy": { ... }
+  },
+  "eyJhbGciOiJFUzI1NiIsInR5cCI6ImVudGl0eS1zdGF0ZW1lbnQrand0In0..."
+]
 ```
 
 **Response:**
@@ -124,71 +135,3 @@ Preview metadata resolution with edited trust chain (no signature verification).
   "valid": true
 }
 ```
-
-## Project Structure
-
-```
-resolve-browser/
-├── cmd/server/main.go          # Server entry point
-├── internal/
-│   ├── api/types.go            # API request/response types
-│   └── handlers/
-│       ├── resolve.go          # Resolve endpoint handler
-│       └── preview.go          # Preview endpoint handler
-├── frontend/
-│   ├── src/
-│   │   ├── components/         # Svelte components
-│   │   ├── lib/                # Utilities, stores, API client
-│   │   ├── App.svelte          # Root component
-│   │   └── main.js             # Entry point
-│   ├── static/                 # Built assets (generated)
-│   ├── package.json
-│   └── vite.config.js
-├── go.mod
-└── IMPLEMENTATION_PLAN.md
-```
-
-## Development
-
-### Frontend Development
-
-Run the Vite dev server with hot reload:
-
-```bash
-cd frontend
-npm run dev
-```
-
-Then proxy API requests to the Go backend (running on :8080) by configuring Vite:
-
-```javascript
-// vite.config.js
-export default defineConfig({
-  plugins: [svelte()],
-  server: {
-    proxy: {
-      '/api': 'http://localhost:8080'
-    }
-  }
-})
-```
-
-### Backend Development
-
-Run with auto-reload using `air` or similar:
-
-```bash
-go run ./cmd/server
-```
-
-## Technology Stack
-
-- **Backend**: Go Fiber v2
-- **Frontend**: Svelte 5 + Vite
-- **Styling**: Tailwind CSS
-- **JSON Diff**: jsondiffpatch
-- **OIDC Federation**: github.com/go-oidfed/lib
-
-## License
-
-Same as the go-oidfed project.

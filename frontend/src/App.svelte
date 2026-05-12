@@ -59,21 +59,18 @@
     
     try {
       const editedData = $editedChain.map((stmt, idx) => ({
-        issuer: stmt.issuer,
-        subject: stmt.subject,
+        iss: stmt.iss,
+        sub: stmt.sub,
         jwks: typeof stmt.jwks === 'string' ? JSON.parse(stmt.jwks) : stmt.jwks,
         metadata: typeof stmt.metadata === 'string' ? JSON.parse(stmt.metadata) : stmt.metadata,
         metadata_policy: typeof stmt.metadata_policy === 'string' ? JSON.parse(stmt.metadata_policy) : stmt.metadata_policy,
         constraints: typeof stmt.constraints === 'string' ? JSON.parse(stmt.constraints) : stmt.constraints,
         authority_hints: stmt.authority_hints,
-        issued_at: stmt.iat,
-        expires_at: stmt.exp
+        iat: stmt.iat,
+        exp: stmt.exp
       }))
       
-	const response = await previewEditedChain({
-		trust_anchor: $result.trust_chain[0].issuer,
-		trust_chain: [...editedData].reverse()
-	})
+      const response = await previewEditedChain([...editedData].reverse())
       
       if (response.error) {
         previewError = {

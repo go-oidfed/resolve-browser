@@ -34,8 +34,8 @@
       $originalResult = JSON.parse(JSON.stringify(response))
       $editedChain = response.trust_chain.map((stmt, index) => ({
         ...stmt,
-        issuer: stmt.issuer,
-        subject: stmt.subject,
+        iss: stmt.issuer,
+        sub: stmt.subject,
         jwks: stmt.jwt_payload?.jwks || { keys: [] },
         metadata: stmt.jwt_payload?.metadata || {},
         metadata_policy: stmt.jwt_payload?.metadata_policy || null,
