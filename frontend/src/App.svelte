@@ -70,10 +70,10 @@
         expires_at: stmt.exp
       }))
       
-      const response = await previewEditedChain({
-        trust_anchor: $result.trust_chain[0].issuer,
-        trust_chain: editedData
-      })
+	const response = await previewEditedChain({
+		trust_anchor: $result.trust_chain[0].issuer,
+		trust_chain: [...editedData].reverse()
+	})
       
       if (response.error) {
         previewError = {

@@ -56,24 +56,23 @@ func ResolvePreviewHandler(c *fiber.Ctx) error {
 		statements[i] = stmt
 	}
 
-	for i := 0; i < len(statements)-1; i++ {
+	for i := len(statements) - 1; i > 0; i-- {
 		parent := statements[i]
-		child := statements[i+1]
+		child := statements[i-1]
 
 		if parent.Constraints != nil {
-			if !checkConstraints(parent.Constraints, child, i+1) {
+			if !checkConstraints(parent.Constraints, child, len(statements)-i) {
 				return c.Status(fiber.StatusBadRequest).JSON(
 					api.ErrorResponse{
 						Error:            "constraint_violation",
-						ErrorDescription: fmt.Sprintf("constraint violation at position %d", i+1),
+						ErrorDescription: fmt.Sprintf("constraint violation at position %d", len(statements)-i),
 					},
 				)
 			}
 		}
 	}
 
-	leafIndex := len(statements) - 1
-	leafMetadata := statements[leafIndex].Metadata
+	leafMetadata := statements[0].Metadata
 
 	metadataPolicies := make([]*oidfed.MetadataPolicies, len(statements))
 	for i, stmt := range statements {
@@ -91,8 +90,8 @@ func ResolvePreviewHandler(c *fiber.Ctx) error {
 	}
 
 	var baseMetadata *oidfed.Metadata
-	if len(statements) > 1 && statements[leafIndex-1].Metadata != nil {
-		superiorMetadata := statements[leafIndex-1].Metadata
+	if len(statements) > 1 && statements[1].Metadata != nil {
+		superiorMetadata := statements[1].Metadata
 		if leafMetadata == nil {
 			baseMetadata = superiorMetadata
 		} else {
