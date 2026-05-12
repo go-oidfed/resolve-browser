@@ -56,11 +56,11 @@ func ResolvePreviewHandler(c *fiber.Ctx) error {
 		child := statements[i-1]
 
 		if parent.Constraints != nil {
-			if !checkConstraints(parent.Constraints, child, len(statements)-i) {
+			if !checkConstraints(parent.Constraints, child, i-1) {
 				return c.Status(fiber.StatusBadRequest).JSON(
 					api.ErrorResponse{
 						Error:            "constraint_violation",
-						ErrorDescription: fmt.Sprintf("constraint violation at position %d", len(statements)-i),
+						ErrorDescription: fmt.Sprintf("constraint violation at position %d", i),
 					},
 				)
 			}
