@@ -5,27 +5,43 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
-	"github.com/go-oidfed/resolve-browser/internal/handlers"
+	"github.com/go-oidfed/lib/cache"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+
+	"github.com/go-oidfed/resolve-browser/internal/handlers"
 )
 
 func main() {
-	app := fiber.New(fiber.Config{
-		ProxyHeader: os.Getenv("PROXY_HEADER"),
-		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			code := fiber.StatusInternalServerError
-			if e, ok := err.(*fiber.Error); ok {
-				code = e.Code
-			}
-			return c.Status(code).JSON(map[string]interface{}{
-				"error": err.Error(),
-			})
+	app := fiber.New(
+		fiber.Config{
+			ProxyHeader: os.Getenv("PROXY_HEADER"),
+			ErrorHandler: func(c *fiber.Ctx, err error) error {
+				code := fiber.StatusInternalServerError
+				if e, ok := err.(*fiber.Error); ok {
+					code = e.Code
+				}
+				return c.Status(code).JSON(
+					map[string]interface{}{
+						"error": err.Error(),
+					},
+				)
+			},
 		},
-	})
+	)
+
+	if cacheMaxLifetime := os.Getenv("CACHE_MAX_LIFETIME"); cacheMaxLifetime != "" {
+		if duration, err := time.ParseDuration(cacheMaxLifetime); err == nil && duration > 0 {
+			cache.SetMaxLifetime(duration)
+			log.Printf("Cache max lifetime set to: %v", duration)
+		} else if err != nil {
+			log.Printf("Warning: Invalid CACHE_MAX_LIFETIME value '%s': %v", cacheMaxLifetime, err)
+		}
+	}
 
 	app.Use(logger.New())
 	app.Use(recover.New())
@@ -39,11 +55,15 @@ func main() {
 		staticPath = filepath.Join(cwd, "frontend", "static")
 	}
 
-	app.Use("/", filesystem.New(filesystem.Config{
-		Root:   http.Dir(staticPath),
-		Browse: false,
-		MaxAge: 3600,
-	}))
+	app.Use(
+		"/", filesystem.New(
+			filesystem.Config{
+				Root:   http.Dir(staticPath),
+				Browse: false,
+				MaxAge: 3600,
+			},
+		),
+	)
 
 	api := app.Group("/api")
 	api.Post("/resolve", handlers.ResolveHandler)

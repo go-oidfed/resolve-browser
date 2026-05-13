@@ -42,6 +42,19 @@ A web application for resolving and inspecting OpenID Federation trust chains.
 
 The server will start on `http://localhost:8080`
 
+## Environment Variables
+
+| Variable             | Description                                   | Format                                          | Default  |
+|----------------------|-----------------------------------------------|-------------------------------------------------|----------|
+| `PROXY_HEADER`       | Header name for client IP behind proxy        | String (e.g., `X-Forwarded-For`)                | Empty    |
+| `CACHE_MAX_LIFETIME` | Maximum lifetime for cached entity statements | Go duration string (e.g., `1h`, `3600s`, `24h`) | No limit |
+
+**Example:**
+```bash
+export CACHE_MAX_LIFETIME=1h
+./server
+```
+
 ## Usage
 
 1. Open your browser to `http://localhost:8080`
