@@ -1,5 +1,6 @@
 <script>
   import JWTViewer from './JWTViewer.svelte'
+  import JsonEditor from './JsonEditor.svelte'
   import { formatTime, formatEntityId } from '../lib/utils.js'
   
   export let statement
@@ -124,47 +125,38 @@
         <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Edit Payload Fields</h4>
         
         {#if canEditMetadata()}
-          <div class="mb-4">
+          <div class="mb-4 group">
             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
               Metadata (JSON) {isLeafStatement() ? '(Leaf)' : '(Direct Subordinate)'}
             </label>
-            <textarea
+            <JsonEditor
               value={stringifyJson(editedStatement?.metadata)}
-              on:change={(e) => handleJsonChange('metadata', e.target.value)}
-              on:input={(e) => handleJsonChange('metadata', e.target.value)}
-              rows="6"
-              class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
-            ></textarea>
+              onChange={(value) => handleJsonChange('metadata', value)}
+            />
           </div>
         {/if}
         
         {#if canEditMetadataPolicy()}
-          <div class="mb-4">
+          <div class="mb-4 group">
             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
               Metadata Policy (JSON)
             </label>
-            <textarea
+            <JsonEditor
               value={stringifyJson(editedStatement?.metadata_policy)}
-              on:change={(e) => handleJsonChange('metadata_policy', e.target.value)}
-              on:input={(e) => handleJsonChange('metadata_policy', e.target.value)}
-              rows="4"
-              class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
-            ></textarea>
+              onChange={(value) => handleJsonChange('metadata_policy', value)}
+            />
           </div>
         {/if}
         
         {#if canEditConstraints()}
-          <div class="mb-4">
+          <div class="mb-4 group">
             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
               Constraints (JSON)
             </label>
-            <textarea
+            <JsonEditor
               value={stringifyJson(editedStatement?.constraints)}
-              on:change={(e) => handleJsonChange('constraints', e.target.value)}
-              on:input={(e) => handleJsonChange('constraints', e.target.value)}
-              rows="4"
-              class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
-            ></textarea>
+              onChange={(value) => handleJsonChange('constraints', value)}
+            />
           </div>
         {/if}
         

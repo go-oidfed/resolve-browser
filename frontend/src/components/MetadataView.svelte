@@ -1,5 +1,6 @@
 <script>
   import { copyToClipboard } from '../lib/utils.js'
+  import { highlightJson } from '../lib/json-utils.js'
   
   export let metadata = {}
   export let title = 'Metadata'
@@ -85,7 +86,7 @@
           
           {#if expandedSections.has(type)}
             <div class="p-3 bg-white dark:bg-gray-800">
-              <pre class="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-x-auto max-h-64 overflow-y-auto"><code class="text-gray-900 dark:text-gray-100">{JSON.stringify(data, null, 2)}</code></pre>
+              <pre class="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-x-auto max-h-64 overflow-y-auto json-syntax-highlight"><code>{@html highlightJson(data)}</code></pre>
             </div>
           {/if}
         </div>

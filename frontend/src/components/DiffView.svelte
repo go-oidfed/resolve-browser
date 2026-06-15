@@ -1,4 +1,8 @@
 <script>
+  import { highlightJson } from '../lib/json-utils.js'
+  import Prism from 'prismjs'
+  import 'prismjs/components/prism-json'
+  
   export let original = {}
   export let modified = {}
   
@@ -39,30 +43,31 @@
       const modStr = formatValue(modVal)
       
       if (origVal === undefined && modVal !== undefined) {
-        // Added
+        const highlighted = highlightDiffValue(modVal, 'added')
         lines.push({
           path: key,
           type: 'added',
           oldLines: [],
-          newLines: modStr.split('\n').map(line => ({ content: line, type: 'added' }))
+          newLines: highlighted.split('\n').map(line => ({ content: line, type: 'added', isHtml: true }))
         })
       } else if (origVal !== undefined && modVal === undefined) {
-        // Removed
+        const highlighted = highlightDiffValue(origVal, 'removed')
         lines.push({
           path: key,
           type: 'removed',
-          oldLines: origStr.split('\n').map(line => ({ content: line, type: 'removed' }))
+          oldLines: highlighted.split('\n').map(line => ({ content: line, type: 'removed', isHtml: true }))
         })
       } else if (origStr !== modStr) {
-        // Modified
-        const origLines = origStr.split('\n')
-        const modLines = modStr.split('\n')
+        const origHighlighted = highlightDiffValue(origVal, 'removed')
+        const modHighlighted = highlightDiffValue(modVal, 'added')
+        const origLines = origHighlighted.split('\n')
+        const modLines = modHighlighted.split('\n')
         
         lines.push({
           path: key,
           type: 'modified',
-          oldLines: origLines.map(line => ({ content: line, type: 'removed' })),
-          newLines: modLines.map(line => ({ content: line, type: 'added' }))
+          oldLines: origLines.map(line => ({ content: line, type: 'removed', isHtml: true })),
+          newLines: modLines.map(line => ({ content: line, type: 'added', isHtml: true }))
         })
       }
     }
@@ -78,6 +83,30 @@
       return value.map(v => typeof v === 'string' ? `"${v}"` : v).join(', ')
     }
     return JSON.stringify(value, null, 2)
+  }
+  
+  function highlightDiffValue(value, type) {
+    if (value === undefined || value === '') return ''
+    
+    let jsonStr
+    try {
+      jsonStr = typeof value === 'string' ? value : JSON.stringify(value, null, 2)
+    } catch (err) {
+      return escapeHtml(String(value))
+    }
+    
+    try {
+      const highlighted = Prism.highlight(jsonStr, Prism.languages.json, 'json')
+      return highlighted
+    } catch (err) {
+      return escapeHtml(jsonStr)
+    }
+  }
+  
+  function escapeHtml(str) {
+    const div = document.createElement('div')
+    div.textContent = str
+    return div.innerHTML
   }
   
   $: diffLines = generateDiffLines(original, modified)
@@ -129,9 +158,9 @@
               <div class="border-r border-gray-200 dark:border-gray-700">
                 {#if block.oldLines && block.oldLines.length > 0}
                   {#each block.oldLines as line}
-                    <div class="px-4 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 flex">
+                    <div class="px-4 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 flex json-syntax-highlight">
                       <span class="w-6 flex-shrink-0 select-none">-</span>
-                      <span class="whitespace-pre-wrap break-all">{line.content}</span>
+                      <span class="whitespace-pre-wrap break-all">{@html line.content}</span>
                     </div>
                   {/each}
                 {:else}
@@ -141,9 +170,9 @@
               <div>
                 {#if block.newLines && block.newLines.length > 0}
                   {#each block.newLines as line}
-                    <div class="px-4 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 flex">
+                    <div class="px-4 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 flex json-syntax-highlight">
                       <span class="w-6 flex-shrink-0 select-none">+</span>
-                      <span class="whitespace-pre-wrap break-all">{line.content}</span>
+                      <span class="whitespace-pre-wrap break-all">{@html line.content}</span>
                     </div>
                   {/each}
                 {:else}
@@ -156,17 +185,17 @@
             <div>
               {#if block.oldLines && block.oldLines.length > 0}
                 {#each block.oldLines as line}
-                  <div class="px-4 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 flex">
+                  <div class="px-4 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 flex json-syntax-highlight">
                     <span class="w-6 flex-shrink-0 select-none">-</span>
-                    <span class="whitespace-pre-wrap break-all">{line.content}</span>
+                    <span class="whitespace-pre-wrap break-all">{@html line.content}</span>
                   </div>
                 {/each}
               {/if}
               {#if block.newLines && block.newLines.length > 0}
                 {#each block.newLines as line}
-                  <div class="px-4 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 flex">
+                  <div class="px-4 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 flex json-syntax-highlight">
                     <span class="w-6 flex-shrink-0 select-none">+</span>
-                    <span class="whitespace-pre-wrap break-all">{line.content}</span>
+                    <span class="whitespace-pre-wrap break-all">{@html line.content}</span>
                   </div>
                 {/each}
               {/if}

@@ -5,3 +5,59 @@
 body {
   font-family: Inter, system-ui, -apple-system, sans-serif;
 }
+
+.json-syntax-highlight .token.string,
+.json-syntax-highlight .token.property,
+.json-syntax-highlight .token.attr-value {
+  color: #059940;
+}
+
+.dark .json-syntax-highlight .token.string,
+.dark .json-syntax-highlight .token.property,
+.dark .json-syntax-highlight .token.attr-value {
+  color: #98c379;
+}
+
+.json-syntax-highlight .token.number {
+  color: #9c27b0;
+}
+
+.dark .json-syntax-highlight .token.number {
+  color: #d19a66;
+}
+
+.json-syntax-highlight .token.boolean {
+  color: #d32f2f;
+}
+
+.dark .json-syntax-highlight .token.boolean {
+  color: #e06c75;
+}
+
+.json-syntax-highlight .token.null,
+.json-syntax-highlight .token.keyword {
+  color: #757575;
+}
+
+.dark .json-syntax-highlight .token.null,
+.dark .json-syntax-highlight .token.keyword {
+  color: #abb2bf;
+}
+
+.json-syntax-highlight .token.property,
+.json-syntax-highlight .token.attr-name {
+  color: #0066cc;
+}
+
+.dark .json-syntax-highlight .token.property,
+.dark .json-syntax-highlight .token.attr-name {
+  color: #61afef;
+}
+
+.json-syntax-highlight .token.punctuation {
+  color: #424242;
+}
+
+.dark .json-syntax-highlight .token.punctuation {
+  color: #dcdfe4;
+}

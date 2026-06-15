@@ -1,5 +1,6 @@
 <script>
   import { copyToClipboard } from '../lib/utils.js'
+  import { highlightJson } from '../lib/json-utils.js'
   
   export let header = {}
   export let payload = {}
@@ -51,9 +52,9 @@
   
   <div class="p-4 bg-white dark:bg-gray-800">
     {#if activeTab === 'header'}
-      <pre class="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-x-auto"><code class="text-gray-900 dark:text-gray-100">{JSON.stringify(header, null, 2)}</code></pre>
+      <pre class="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-x-auto json-syntax-highlight"><code>{@html highlightJson(header)}</code></pre>
     {:else if activeTab === 'payload'}
-      <pre class="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-x-auto max-h-96 overflow-y-auto"><code class="text-gray-900 dark:text-gray-100">{JSON.stringify(payload, null, 2)}</code></pre>
+      <pre class="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-x-auto max-h-96 overflow-y-auto json-syntax-highlight"><code>{@html highlightJson(payload)}</code></pre>
     {:else if activeTab === 'raw'}
       <div class="relative">
         <pre class="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-x-auto break-all pr-20 text-gray-900 dark:text-gray-100">{rawJwt}</pre>
