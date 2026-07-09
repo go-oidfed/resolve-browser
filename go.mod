@@ -4,7 +4,7 @@ go 1.25.8
 
 require (
 	github.com/go-oidfed/lib v0.10.12
-	github.com/gofiber/fiber/v2 v2.52.13
+	github.com/gofiber/fiber/v2 v2.52.14
 )
 
 require (
