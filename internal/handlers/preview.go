@@ -4,7 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"reflect"
+	"slices"
 	"strings"
 	"time"
 
@@ -263,12 +265,7 @@ func checkConstraints(constraints *oidfed.ConstraintSpecification, stmt *oidfed.
 }
 
 func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(slice, item)
 }
 
 func matchesNamingConstraint(constraint, entityID string) bool {
@@ -300,7 +297,7 @@ func mergeMetadata(target, source *oidfed.Metadata) {
 		targetField := targetVal.Field(i)
 		sourceField := sourceVal.Field(i)
 
-		if sourceField.Kind() == reflect.Ptr && !sourceField.IsNil() {
+		if sourceField.Kind() == reflect.Pointer && !sourceField.IsNil() {
 			if targetField.IsNil() {
 				targetField.Set(sourceField)
 			} else {
@@ -313,9 +310,7 @@ func mergeMetadata(target, source *oidfed.Metadata) {
 		if target.Extra == nil {
 			target.Extra = make(map[string]any)
 		}
-		for k, v := range source.Extra {
-			target.Extra[k] = v
-		}
+		maps.Copy(target.Extra, source.Extra)
 	}
 }
 

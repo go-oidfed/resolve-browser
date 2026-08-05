@@ -26,7 +26,7 @@ func main() {
 					code = e.Code
 				}
 				return c.Status(code).JSON(
-					map[string]interface{}{
+					map[string]any{
 						"error": err.Error(),
 					},
 				)
