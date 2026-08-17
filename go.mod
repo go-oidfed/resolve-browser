@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/go-oidfed/lib v0.11.1
-	github.com/gofiber/fiber/v2 v2.52.14
+	github.com/gofiber/fiber/v2 v2.52.15
 )
 
 require (
