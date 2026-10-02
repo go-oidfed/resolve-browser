@@ -3,7 +3,7 @@ module github.com/go-oidfed/resolve-browser
 go 1.26.0
 
 require (
-	github.com/go-oidfed/lib v0.11.2
+	github.com/go-oidfed/lib v0.11.4
 	github.com/gofiber/fiber/v2 v2.52.15
 )
 
@@ -15,7 +15,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/cloudflare/circl v1.6.5 // indirect
-	github.com/coreos/go-oidc/v3 v3.20.0 // indirect
+	github.com/coreos/go-oidc/v3 v3.21.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
 	github.com/eclipse-keypont/crypto11 v1.6.8 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -33,7 +33,7 @@ require (
 	github.com/lestrrat-go/dsig v1.4.0 // indirect
 	github.com/lestrrat-go/dsig-circl-ed448 v1.0.0 // indirect
 	github.com/lestrrat-go/dsig-secp256k1 v1.0.0 // indirect
-	github.com/lestrrat-go/jwx/v4 v4.4.0 // indirect
+	github.com/lestrrat-go/jwx/v4 v4.5.0 // indirect
 	github.com/lestrrat-go/option/v3 v3.0.0-alpha1 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
@@ -53,10 +53,10 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zachmann/go-utils v0.0.0-20260709061248-d06e3e0557c4 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
-	golang.org/x/crypto v0.55.0 // indirect
+	golang.org/x/crypto v0.56.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
-	golang.org/x/oauth2 v0.36.0 // indirect
+	golang.org/x/oauth2 v0.37.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.41.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
